@@ -22,16 +22,8 @@ jobs:
           rm -f *.tar.xz
           mv openwrt-* openwrt
           
-      - name: Get Source
-        run: |
-          cd openwrt/package
-          svn co https://github.com/ofmodemsandmen/ROOterSource2305/trunk/package/rooter/ext-rooter-basic
-          svn co https://github.com/ofmodemsandmen/ROOterSource2305/trunk/package/rooter/0basicsupport/ext-sms
-          svn co https://github.com/ofmodemsandmen/ROOterSource2305/trunk/package/rooter/0basicsupport/ext-buttons
-          svn co https://github.com/ofmodemsandmen/ROOterSource2305/trunk/package/rooter/0drivers/rqmi
-          svn co https://github.com/ofmodemsandmen/ROOterSource2305/trunk/package/rooter/0drivers/rmbim
-          svn co https://github.com/ofmodemsandmen/ROOterSource2305/trunk/package/feeds/luci/luci-proto-mbim
-          svn co https://github.com/ofmodemsandmen/ROOterSource2305/trunk/package/rooter-builds/0protocols/luci-proto-3x
+      - name: Adjust location source
+        run: mv -t openwrt/package/ ext-buttons ext-rooter-basic ext-sms rqmi rmbim luci-proto-mbim luci-proto-3x && ls -a openwrt/package/
       
       - name: Updating feeds && Installing feeds
         run: |
