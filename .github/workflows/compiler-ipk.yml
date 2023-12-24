@@ -1,0 +1,63 @@
+name: compiler-ipk
+
+on:
+  workflow_dispatch:
+
+env:
+  REPO_SDK: https://downloads.openwrt.org/releases/21.02.5/targets/armvirt/64/openwrt-sdk-21.02.5-armvirt-64_gcc-8.4.0_musl.Linux-x86_64.tar.xz
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    if: ${{ github.event.repository.owner.id }} == ${{ github.event.sender.id }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - name: Download sdk
+        run: |
+          wget ${REPO_SDK}
+          tar xf openwrt-*
+          rm -f *.tar.xz
+          mv openwrt-* openwrt
+          
+      - name: Get Source
+        run: |
+          cd openwrt/package
+          svn co https://github.com/ofmodemsandmen/ROOterSource2305/trunk/package/rooter/ext-rooter-basic
+          svn co https://github.com/ofmodemsandmen/ROOterSource2305/trunk/package/rooter/0basicsupport/ext-sms
+          svn co https://github.com/ofmodemsandmen/ROOterSource2305/trunk/package/rooter/0basicsupport/ext-buttons
+          svn co https://github.com/ofmodemsandmen/ROOterSource2305/trunk/package/rooter/0drivers/rqmi
+          svn co https://github.com/ofmodemsandmen/ROOterSource2305/trunk/package/rooter/0drivers/rmbim
+          svn co https://github.com/ofmodemsandmen/ROOterSource2305/trunk/package/feeds/luci/luci-proto-mbim
+          svn co https://github.com/ofmodemsandmen/ROOterSource2305/trunk/package/rooter-builds/0protocols/luci-proto-3x
+      
+      - name: Updating feeds && Installing feeds
+        run: |
+          cd openwrt/
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+      
+      - name: Compile the source
+        run: |
+          mkdir -p packed
+          cd openwrt/
+          make defconfig
+          make package/ext-rooter-basic/compile -j${nproc} V=w
+          find bin/ -type f -name '*ext-buttons*' -exec mv -t ../packed {} +
+          find bin/ -type f -name '*ext-rooter-basic*' -exec mv -t ../packed {} +
+          find bin/ -type f -name '*ext-sms*' -exec mv -t ../packed {} +
+          find bin/ -type f -name '*rqmi*' -exec mv -t ../packed {} +
+          find bin/ -type f -name '*rmbim*' -exec mv -t ../packed {} +
+          find bin/ -type f -name '*luci-proto-mbim*' -exec mv -t ../packed {} +
+          find bin/ -type f -name '*luci-proto-3x*' -exec mv -t ../packed {} +
+         
+      - name: Upload Package to Releases
+        uses: ncipollo/release-action@main
+        if: ${{ env.PACKAGED_STATUS }} == 'success' && !cancelled()
+        with:
+          tag: 21.02.5-armvirt
+          artifacts: "packed/*"
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
