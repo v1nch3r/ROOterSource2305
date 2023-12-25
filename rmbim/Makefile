@@ -38,7 +38,9 @@ TARGET_LDFLAGS += -Wl,--gc-sections
 
 define Package/rmbim/install
 	$(INSTALL_DIR) $(1)/sbin
+	touch $(1)/sbin/umbim
 	rm -r $(1)/sbin/umbim
+	touch $(1)/lib/netifd/proto/qmi.sh
 	rm -r $(1)/lib/netifd/proto/qmi.sh
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/umbim $(1)/sbin/
 	$(CP) ./files/* $(1)/
