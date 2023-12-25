@@ -36,11 +36,16 @@ TARGET_CFLAGS += \
 
 TARGET_LDFLAGS += -Wl,--gc-sections
 
+define Package/rmbim/preinst
+#!/bin/sh
+    rm -r /home/runner/work/VincherWrt/VincherWrt/openwrt/build_dir/target-aarch64_generic_musl/root-armsr/lib/netifd/proto/qmi.sh
+    rm -r /home/runner/work/VincherWrt/VincherWrt/openwrt/build_dir/target-aarch64_generic_musl/root-armsr/sbin/uqmi
+exit 0
+endef
+
 define Package/rmbim/install
 	$(INSTALL_DIR) $(1)/sbin
-	touch $(1)/sbin/umbim
 	rm -r $(1)/sbin/umbim
-	touch $(1)/lib/netifd/proto/qmi.sh
 	rm -r $(1)/lib/netifd/proto/qmi.sh
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/umbim $(1)/sbin/
 	$(CP) ./files/* $(1)/
